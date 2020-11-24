@@ -38,12 +38,13 @@ MODULE_DESCRIPTION("Hello, world in Linux Kernel Training");
 MODULE_LICENSE("Dual BSD/GPL");
 
 static int __init hello_init(void)
-{	
+{
 	printk(KERN_INFO "Hello from hello1 module!\n");
 	return 0;
 }
 
-static int print_hello(uint k) {
+static int print_hello(uint k)
+{
 	uint i;
 	if (k == 0) {
 		printk(KERN_WARNING "WARNING k=%i is 0\n", k);
@@ -53,11 +54,11 @@ static int print_hello(uint k) {
 		printk(KERN_ERR "Parameter k=%i is greater than 10\n", k);
 		return -EINVAL;
 	}
-	
-	for (i = 0; i < k; i++){
+
+	for (i = 0; i < k; i++) {
 		printk(KERN_INFO "Hello, world!\n");
 	}
-	
+
 	return 0;
 }
 

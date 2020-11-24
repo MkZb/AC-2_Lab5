@@ -38,12 +38,13 @@ MODULE_DESCRIPTION("Hello, world in Linux Kernel Training");
 MODULE_LICENSE("Dual BSD/GPL");
 
 static uint k = 1;
-module_param(k, uint, 0);
+module_param(k, uint, S_IRUGO);
 MODULE_PARM_DESC(k, "Amount of times hello world message should be repeated");
 
 static int __init hello_init(void)
-{	
+{
 	uint i;
+
 	if (k == 0) {
 		printk(KERN_WARNING "WARNING k=%i is 0\n", k);
 	} else if (k >= 5 && k <= 10) {
@@ -52,13 +53,13 @@ static int __init hello_init(void)
 		printk(KERN_ERR "Parameter k=%i is greater than 10\n", k);
 		return -EINVAL;
 	}
-	
-	for (i = 0; i < k; i++){
+
+	for (i = 0; i < k; i++) {
 		printk(KERN_INFO "Hello, world!\n");
 	}
-	
+
 	return 0;
-	
+
 }
 
 static void __exit hello_exit(void)
