@@ -33,28 +33,56 @@
 #include <linux/module.h>
 #include <linux/printk.h>
 
+
+#include "linux/ktime.h"
+#include "linux/slab.h"
+
 MODULE_AUTHOR("Mykola Zubets, IV-81");
 MODULE_DESCRIPTION("Hello, world in Linux Kernel Training");
 MODULE_LICENSE("Dual BSD/GPL");
 
 static uint k = 1;
-module_param(k, uint, S_IRUGO);
+module_param(k, uint, 0444);
 MODULE_PARM_DESC(k, "Amount of times hello world message should be repeated");
+
+struct time_list {
+	struct time_list *next;
+	ktime_t time;
+};
+
+static struct time_list *head;
 
 static int __init hello_init(void)
 {
+	struct time_list *tail;
 	uint i;
 
 	if (k == 0) {
-		printk(KERN_WARNING "WARNING k=%i is 0\n", k);
+		printk(KERN_WARNING "k=%i is 0\n", k);
+		return 0;
 	} else if (k >= 5 && k <= 10) {
-		printk(KERN_WARNING "WARNING k=%i in range of 5,10\n", k);
+		printk(KERN_WARNING "k=%i in range of 5,10\n", k);
 	} else if (k > 10) {
 		printk(KERN_ERR "Parameter k=%i is greater than 10\n", k);
 		return -EINVAL;
 	}
 
-	for (i = 0; i < k; i++) {
+	head = kmalloc(sizeof(struct time_list *), GFP_KERNEL);
+	head->next = NULL;
+	head->time = ktime_get();
+	tail = head;
+	printk(KERN_INFO "Hello, world!\n");
+
+	for (i = 1; i < k; i++) {
+		tail->next = kmalloc(sizeof(struct time_list *), GFP_KERNEL);
+		if (tail->next == NULL) {
+			kfree(tail->next);
+			printk(KERN_ERR "Out of memory");
+			return -EINVAL;
+		}
+		tail = tail->next;
+		tail->next = NULL;
+		tail->time = ktime_get();
 		printk(KERN_INFO "Hello, world!\n");
 	}
 
@@ -64,7 +92,14 @@ static int __init hello_init(void)
 
 static void __exit hello_exit(void)
 {
-	/* Do nothing here right now */
+	struct time_list *tail;
+
+	while (head != NULL) {
+		tail = head;
+		pr_info("Time: %lld\n", tail->time);
+		head = tail->next;
+		kfree(tail);
+	}
 }
 
 module_init(hello_init);
